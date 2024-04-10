@@ -2,6 +2,7 @@
 import json
 import socket
 import time
+import math
 from typing import Optional, Union, Any
 import logging
 from .utils import get_pid_list, get_sn
@@ -43,6 +44,8 @@ class tcp_client(object):
     _dpid = []
     # last sn
     _sn = str
+    _query_res = {}
+    _query_lt = 0
     
     def __init__(self, ip):
         self._ip = ip
@@ -257,4 +260,9 @@ class tcp_client(object):
         query device state
         :return:
         """
-        return self._send_receiver(CMD_QUERY, {})
+        if math.floor(time.time()) - self.query_lt > 10:
+            self._query_res = self._send_receiver(CMD_QUERY, {})
+            self.query_lt = math.floor(time.time())
+            return self._query_res
+        else:
+            return self._query_res
